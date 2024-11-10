@@ -10,20 +10,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $_POST['phone'];
     $address = $_POST['address'];
 
-    // Insert user data into the database
-    $sql = "INSERT INTO users (name, email, password, phone, address) 
-            VALUES ('$name', '$email', '$password', '$phone', '$address')";
+    // Check if the email already exists in the database
+    $sql = "SELECT * FROM users WHERE email='$email'";
+    $result = $conn->query($sql);
 
-    if ($conn->query($sql) === TRUE) {
-        // If registration is successful, show a success popup using JavaScript
+    if ($result->num_rows > 0) {
+        // If email already exists, show an alert and stop the script
         echo "<script>
-                alert('You have successfully registered!');
-                window.location.href = 'login.html'; // Redirect to the login page after the alert
+                alert('This email is already registered. Please use a different email.');
+                window.location.href = 'register.html'; // Stay on the registration page
               </script>";
-        exit();  // Stop the script after displaying the alert and redirect
+        exit();  // Stop further execution if email exists
     } else {
-        // Display an error if registration fails
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        // If email does not exist, insert new user data into the database
+        $sql = "INSERT INTO users (name, email, password, phone, address) 
+                VALUES ('$name', '$email', '$password', '$phone', '$address')";
+
+        if ($conn->query($sql) === TRUE) {
+            // If registration is successful, show a success popup and redirect to login page
+            echo "<script>
+                    alert('You have successfully registered!');
+                    window.location.href = 'login.html'; // Redirect to login page
+                  </script>";
+            exit();  // Stop the script after the alert and redirect
+        } else {
+            // Display an error if registration fails
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
 }
 ?>
